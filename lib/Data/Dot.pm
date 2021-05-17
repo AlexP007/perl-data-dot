@@ -28,7 +28,10 @@ sub data_get(+$;$) {
     # Initial.
     my ($data, $key, $default) = @_;
 
-    unless (ref $data || length $key == 0) {
+    unless (ref $data
+    || defined($key)
+    || length $key
+    ) {
         return $default;
     }
 
@@ -49,6 +52,51 @@ sub data_get(+$;$) {
     return $interim_or_result;
 }
 
+# Sub data_set.
+# Expects first param to be reference to data struct.
+# Second param to be key string. Maximum nested members limit is 512.
+# Third param is value.
+# If key or value is not defined or key is 0 length - false returns.
+sub data_set(+$$) {
+    # Initial.
+    my ($data, $key, $value) = @_;
+
+    unless (ref $data
+    || defined($key)
+    || length $key
+    || defined($value)
+    ) {
+        return 0;
+    }
+
+    # Flat array of keys.
+    my @keys = split(/\./, $key);
+    my $keys_length = @keys;
+    # Limiting.
+    if (scalar $keys_length > 512) {
+        return 0;
+    }
+
+    # Var for intermidiate data in complex structs. Initial value is passed $data.
+    my $interim_or_result = $data;
+
+    my $index = 0;
+
+    for my $key (@keys) {
+        $index++;
+
+        if ($index == $keys_length) {
+            return set($interim_or_result, $key, $value);
+        } else {
+            $interim_or_result = get($interim_or_result, $key);
+        }
+
+        return 0 unless defined $interim_or_result;
+    }
+
+    return 0;
+}
+
 sub get {
     my ($data, $key) = @_;
 
@@ -63,7 +111,24 @@ sub get {
     }
 
     return undef;
+}
 
+sub set {
+    my ($data, $key, $value) = @_;
+
+    my $type = reftype $data;
+
+    if ($type eq 'HASH') {
+        $data->{$key} = $value;
+        return 1;
+    }
+
+    if ($type eq 'ARRAY') {
+        $data->[$key] = $value;
+        return 1;
+    }
+
+    return 0;
 }
 
 sub limit {
