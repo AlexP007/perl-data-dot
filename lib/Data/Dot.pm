@@ -1,11 +1,5 @@
-# Copyright (c) 2021 by Alexander Panteleev. This module is free
-# software; you can redistribute it and/or modify it under the same
-# terms as Perl itself.
-
 package Data::Dot;
-# Manipulate data structures with dot notation.
-# Works with complex structures like:
-# array/hashes/multidimensional arrays, array of hashes, etc.
+# ABSTRACT: Manipulate data structures with dot notation.
 
 use Modern::Perl;
 use Exporter 'import';
@@ -57,6 +51,7 @@ sub data_get(+$;$) {
 # Second param to be key string. Maximum nested members limit is 512.
 # Third param is value.
 # If key is not defined or is 0 length - false returns.
+# Set value without autovivication.
 sub data_set(+$$) {
     # ARGS.
     my ($data, $key, $value) = @_;
@@ -79,18 +74,18 @@ sub data_set(+$$) {
     # Var for intermidiate data in complex structs. Initial value is passed $data.
     my $interim_or_result = $data;
 
-    my $index = 0;
+    my $key_counter = 1;
 
     for my $key (@keys) {
-        $index++;
-
-        if ($index == $keys_length) {
+        if ($key_counter == $keys_length) {
             return set($interim_or_result, $key, $value);
         } else {
             $interim_or_result = get($interim_or_result, $key);
         }
 
         return 0 unless defined $interim_or_result;
+
+        $key_counter++;
     }
 
     return 0;
@@ -139,3 +134,81 @@ sub limit {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+    Data::Dot - Manipulate data structures with dot notation.
+
+=head1 SYNOPSIS
+
+    use Data::Dot;
+
+    # Getting value by key.
+    my %hash = (first_key => [{}, {second_key => 'value1'} ]);
+    my $value1 = data_get(\%hash, 'first_key.1.second_key'); # value1
+    my @array = ({}, {first_key => [ {second_key => 'value2'} ] });
+    my $value2 = data_get(\@array, '1.first_key.0.second_key'); # value2
+
+    # Getting undef value if the key is not set.
+    my $undef_value = data_get(\%hash, 'third_key.2.second_key'); # undef
+
+    # Getting default value if the key is not set.
+    my $default = 'dafault';
+    my $default_value = data_get(\%hash, 'third_key.2.second_key', $default); # $default
+
+    # Setting value.
+    my $set_succes = data_set(\@array, '1.first_key.2', {third_key => 'value3'}); #true
+    my $set_failed = data_set(\@array, '1.third_key.2', {fours_key => 'value3'}); # false
+
+=head1 DESCRIPTION
+
+    Manipulate data structures with dot notation.
+    Works with complex structures like:  array/hashes/multidimensional arrays, array of hashes, etc.
+
+    sub data_get to fetch data from structures.
+    sub data_set to set values.
+
+    Dot notation is like JavaScript or C# but adds an opportunity to Manipulate arrays additionaly.
+    Common key in dot notation looks like "key.1.name", where "1" could be an array index or hash/object key.
+
+    The main advantage of this approach, that you could generate keys dynamically on the fly
+    simply contatinating strings via dot ".".
+
+    But there is a small limitation of 512 key members seperated by dot's. Usually this is enough.
+
+
+=head1 VERSION
+
+    version 1.0.0
+
+=head1 SOURCE CODE REPOSITORY
+
+    https://github.com/AlexP007/perl-data-dot - fork or add pr.
+
+=head1 TODO
+
+=over 4
+
+=item * delete sub
+=item * auto vivication in data_set
+
+=back
+
+=head1 AUTHOR
+
+    Alexander Panteleev <alex.panteleev@protonmail.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+    This software is copyright (c) 2021 by Alexander Panteleev.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
+
+=cut
