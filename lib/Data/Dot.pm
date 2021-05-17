@@ -25,12 +25,12 @@ our @EXPORT_OK = qw(data_get data_set);
 # Third optional param is default value. If it's not set it will be undef.
 # If key is not found in the struct default will be returned.
 sub data_get(+$;$) {
-    # Initial.
+    # ARGS.
     my ($data, $key, $default) = @_;
 
     unless (ref $data
-    || defined($key)
-    || length $key
+    && defined($key)
+    && length $key
     ) {
         return $default;
     }
@@ -56,15 +56,14 @@ sub data_get(+$;$) {
 # Expects first param to be reference to data struct.
 # Second param to be key string. Maximum nested members limit is 512.
 # Third param is value.
-# If key or value is not defined or key is 0 length - false returns.
+# If key is not defined or is 0 length - false returns.
 sub data_set(+$$) {
-    # Initial.
+    # ARGS.
     my ($data, $key, $value) = @_;
 
     unless (ref $data
-    || defined($key)
-    || length $key
-    || defined($value)
+    && defined($key)
+    && length $key
     ) {
         return 0;
     }
