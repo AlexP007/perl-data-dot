@@ -1,7 +1,7 @@
 use Modern::Perl;
 use Data::Dot;
 use Data::Dumper;
-use Test::Simple tests => 4;
+use Test::Simple tests => 7;
 
 $|=1;
 
@@ -73,12 +73,65 @@ $result = data_set(\%test_hash, $key, $expected);
 
 ok(!$result, 'Returns wrong value: true, expected: false');
 
-# TEST 4
-# Testing undef value.
-$key = 'key1';
-$expected = undef;
-%test_hash = ();
+
+# TEST 5
+# Testing array of hashes.
+$key = '2.key2';
+$expected = 'value2';
+@test_array = ('one', 'two', {key1 => 'value1'}, 'four');
+
+$result = data_set(\@test_array, $key, $expected);
+
+if ($result) {
+    $get_value = $test_array[2]->{key2};
+
+    ok($get_value eq $expected,
+        sprintf('Returns wrong value: %s, expected: %s',
+            $get_value,
+            $expected,
+    ));
+} else {
+    ok($result, 'Returns wrong value: false, expected: true');
+}
+
+# TEST 6
+# Testing reference pass.
+$key = '2.key2';
+$expected = 'value2';
+@test_array = ('one', 'two', {key1 => 'value1'}, 'four');
+
+$result = data_set(@test_array, $key, $expected);
+
+if ($result) {
+    $get_value = $test_array[2]->{key2};
+
+    ok($get_value eq $expected,
+        sprintf('Returns wrong value: %s, expected: %s',
+            $get_value,
+            $expected,
+    ));
+} else {
+    ok($result, 'Returns wrong value: false, expected: true');
+}
+
+# TEST 7
+# Testing complex struct.
+$key = 'key1.1.key2';
+$expected = 'value2';
+%test_hash = (
+    key1 => [{}, {}],
+);
 
 $result = data_set(\%test_hash, $key, $expected);
 
-ok(!$result, 'Returns wrong value: true, expected: false');
+if ($result) {
+    $get_value = $test_hash{key1}->[1]{key2};
+
+    ok($get_value eq $expected,
+        sprintf('Returns wrong value: %s, expected: %s',
+            $get_value,
+            $expected,
+    ));
+} else {
+    ok($result, 'Returns wrong value: false, expected: true');
+}
