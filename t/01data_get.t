@@ -1,7 +1,7 @@
 use Modern::Perl;
 use Data::Dot;
 use Data::Dumper;
-use Test::Simple tests => 7;
+use Test::Simple tests => 9;
 
 $|=1;
 
@@ -103,6 +103,36 @@ $expected = 'value2';
 );
 
 $result = data_get(\%test_hash, 'key1.1.key2');
+
+ok($result eq $expected,
+    sprintf('Returns wrong value: %s, expected: %s',
+        $result,
+        $expected,
+));
+
+# TEST 8
+# Testing undef key.
+$expected = 'default';
+%test_hash = (
+    key => 'value1',
+);
+
+$result = data_get(\%test_hash, undef, $expected);
+
+ok($result eq $expected,
+    sprintf('Returns wrong value: %s, expected: %s',
+        $result,
+        $expected,
+));
+
+# TEST 9
+# Testing zero length key.
+$expected = 'default';
+%test_hash = (
+    key => 'value1',
+);
+
+$result = data_get(\%test_hash, '', $expected);
 
 ok($result eq $expected,
     sprintf('Returns wrong value: %s, expected: %s',

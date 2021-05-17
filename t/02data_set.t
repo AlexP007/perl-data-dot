@@ -1,7 +1,7 @@
 use Modern::Perl;
 use Data::Dot;
 use Data::Dumper;
-use Test::Simple tests => 2;
+use Test::Simple tests => 4;
 
 $|=1;
 
@@ -30,7 +30,7 @@ if ($result) {
             $expected,
     ));
 } else {
-    ok($result, 'Result is false')
+    ok($result, 'Returns wrong value: false, expected: true');
 }
 
 # TEST 2
@@ -50,5 +50,35 @@ if ($result) {
             $expected,
     ));
 } else {
-    ok($result, 'Result is false')
+    ok($result, 'Returns wrong value: false, expected: true');
 }
+
+# TEST 3
+# Testing undef key.
+$key = 'key1';
+$expected = 'value1';
+%test_hash = ();
+
+$result = data_set(\%test_hash, undef, $expected);
+
+ok(!$result, 'Returns wrong value: true, expected: false');
+
+# TEST 4
+# Testing zero length key.
+$key = '';
+$expected = 'value1';
+%test_hash = ();
+
+$result = data_set(\%test_hash, $key, $expected);
+
+ok(!$result, 'Returns wrong value: true, expected: false');
+
+# TEST 4
+# Testing undef value.
+$key = 'key1';
+$expected = undef;
+%test_hash = ();
+
+$result = data_set(\%test_hash, $key, $expected);
+
+ok(!$result, 'Returns wrong value: true, expected: false');
