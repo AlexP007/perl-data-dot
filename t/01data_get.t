@@ -1,7 +1,7 @@
 use Modern::Perl;
 use Data::Dot;
 use Data::Dumper;
-use Test::Simple tests => 6;
+use Test::Simple tests => 7;
 
 $|=1;
 
@@ -88,6 +88,21 @@ $expected = 'value2';
 @test_array = ('one', 'two', {key1 => 'value1', key2 => $expected}, 'four');
 
 $result = data_get(@test_array, '2.key2');
+
+ok($result eq $expected,
+    sprintf('Returns wrong value: %s, expected: %s',
+        $result,
+        $expected,
+));
+
+# TEST 7
+# Testing complex struct.
+$expected = 'value2';
+%test_hash = (
+    key1 => [{}, {key2 =>$expected}],
+);
+
+$result = data_get(\%test_hash, 'key1.1.key2');
 
 ok($result eq $expected,
     sprintf('Returns wrong value: %s, expected: %s',
