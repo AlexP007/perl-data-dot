@@ -16,11 +16,6 @@ sub data_get(+$;$) {
     return get_by_composite_key($data, $key, $default);
 }
 
-# Expects first param to be reference to data struct.
-# Second param to be key string.
-# Third param is value.
-# If key is not defined or is 0 length - false returns.
-# Set value without autovivication.
 sub data_set(+$$) {
     my ($data, $key, $value) = @_;
 
@@ -119,7 +114,7 @@ sub set_by_single_key {
 
 __END__
 
-# ABSTRACT: Manipulate data structures with dot notation.
+# ABSTRACT: Manipulate data structs with dot notation.
 
 =pod
 
@@ -127,77 +122,92 @@ __END__
 
 =head1 NAME
 
-    Data::Dot - Manipulate data I<structures> with I<dot notation>.
+    Data::Dot - Manipulate data I<structs> with I<dot notation>.
+
+=head1 VERSION
+
+    version 1.0.0
 
 =head1 SYNOPSIS
 
     use Data::Dot;
 
     # Getting value by key.
-    my %hash = (first_key => [{}, {second_key => 'value1'} ]);
-    my $value1 = data_get(\%hash, 'first_key.1.second_key'); # value1
-    my @array = ({}, {first_key => [ {second_key => 'value2'} ] });
-    my $value2 = data_get(\@array, '1.first_key.0.second_key'); # value2
+    my %author = (name => 'big guy', articles => [{heading => 'first blog'}, {heading => 'second blog'} ]);
+    my $second_blog_heading = data_get(\%author, 'articles.1.heading'); # second blog
+    my @authors = (\%author);
+    my $first_author_first_blog_heading = data_get(\@authors, '0.articles.0.heading'); # first blog
 
     # Getting undef value if the key is not set.
-    my $undef_value = data_get(\%hash, 'third_key.2.second_key'); # undef
+    my $undef_value = data_get(\%author, 'publisher.address.street'); # undef
 
     # Getting default value if the key is not set.
-    my $default = 'dafault';
-    my $default_value = data_get(\%hash, 'third_key.2.second_key', $default); # $default
+    my $default = 'unknown';
+    my $default_value = data_get(\%author, 'publisher.address.street', $default); # unknown
 
     # Setting value.
-    my $set_succes = data_set(\@array, '1.first_key.2', {third_key => 'value3'}); #true
-    my $set_failed = data_set(\@array, '1.third_key.2', {fours_key => 'value3'}); # false
+    my $set_success = data_set(\@authors, '0.articles.2', {heading => 'third blog'}); #true
+    my $set_failed = data_set(\@authors, '1.articles.2', {heading => 'third blog'}); # false
 
 =head1 DESCRIPTION
 
-    Manipulate data I<structures> with I<dot notation>.
-    Works with complex I<structures> like:  array/hashes/multidimensional arrays, array of hashes, etc.
+    Lightweight module to manipulate data I<structs> with I<dot notation>.
+    Works with complex I<structures> like: array/hashes/multidimensional arrays, array of hashes, etc.
 
-    sub data_get to fetch data from I<structures>.
-    sub data_set to set values.
-
+    This module uses a composite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
     The main advantage of this approach, that you could generate keys dynamically on the fly
-    simply contatinating strings via dot ".".
+    simply concatinating strings via dot ".".
 
-=head1 TERMS
+=head2 TERMS
 
 =over 4
 
 =item I<Structs> or I<structures> is arrays, hashes or objects.
 
-=item I<Dot notation> is a string containing the keys of nested structures separated by a dot: ".". Looks like "key.1.name", where "1" could be an array index or hash/object key.
+=item I<Dot notation> is a string containing the keys of nested structures separated by a dot: ".". Looks like "person.1.name", where "1" could be an array index or hash/object key.
 
 =back
 
-=head2 data_get
+=head2 FUNCTIONS
 
-    Fetches data from complex I<structures> using a I<dot notation> key.
+Unlike other heavy and complex solutions, this module provides two simple functions:
 
-    Expects first param to be reference to data I<structs>.
+=head3 data_get
+
+    Fetches data from complex I<structs> using a I<dot notation> key.
+
+    Expects first param to be reference to data I<struct>.
     Second param to be I<dot notation> key string.
     Third optional param is default value. If it's not set it will be undef.
-    
+
     If key is not found in the I<struct> or is zero length or not defined default value will be returned.
 
-=head1 VERSION
+=head3 data_set
 
-    version 1.0.0
+    Sets data in complex I<structs> using a I<dot notation> key.
 
-=head1 SOURCE CODE REPOSITORY
+    Expects first param to be reference to data I<struct>.
+    Second param to be I<dot notation> key string.
+    Third param is value.
+    If key is not defined or zero length false will be returned.
 
-    https://github.com/AlexP007/perl-data-dot - fork or add pr.
+    Set value without autovivication.
 
 =head1 TODO
 
 =over 4
 
-=item * delete sub
+=item * data_delete sub
 
 =item * immutable subs like data_get_i & data_set_i
 
+=item * memoization
+
 =back
+
+=head1 SOURCE CODE REPOSITORY
+
+    https://github.com/AlexP007/perl-data-dot - fork or add pr.
 
 =head1 AUTHOR
 
