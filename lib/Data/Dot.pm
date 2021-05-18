@@ -1,44 +1,56 @@
 package Data::Dot;
-# ABSTRACT: Manipulate data structures with dot notation.
 
 use Modern::Perl;
 use Exporter 'import';
 use Scalar::Util 'reftype';
 
-use constant {
-    LIMIT => 512,
-};
-
 our $VERSION = '1.0.0';
 our @EXPORT = qw(data_get data_set);
 our @EXPORT_OK = qw(data_get data_set);
 
-# Sub data_get.
-# Expects first param to be reference to data struct.
-# Second param to be key string. Maximum nested members limit is 512.
-# Third optional param is default value. If it's not set it will be undef.
-# If key is not found in the struct default will be returned.
 sub data_get(+$;$) {
-    # ARGS.
     my ($data, $key, $default) = @_;
 
-    unless (ref $data
-    && defined($key)
-    && length $key
-    ) {
-        return $default;
+    return $default unless validate_data_and_key($data, $key);
+
+    return get_by_composite_key($data, $key, $default);
+}
+
+# Expects first param to be reference to data struct.
+# Second param to be key string.
+# Third param is value.
+# If key is not defined or is 0 length - false returns.
+# Set value without autovivication.
+sub data_set(+$$) {
+    my ($data, $key, $value) = @_;
+
+    return 0 unless validate_data_and_key($data, $key);
+
+    return set_by_composite_key($data, $key, $value);
+}
+
+sub validate_data_and_key {
+    my ($data, $key) = @_;
+
+    if (ref $data
+    && defined $key
+    && length $key) {
+        return 1;
     }
 
+    return 0;
+}
+
+sub get_by_composite_key {
+    my ($data, $key, $default) = @_;
     # Var for intermidiate data in complex structs. Initial value is passed $data.
     # Also last value will be stored here. It's our target.
     my $interim_or_result = $data;
     # Flat array of keys.
     my @keys = split(/\./, $key);
-    # Limiting.
-    limit(\@keys, LIMIT);
 
     for my $key (@keys) {
-        $interim_or_result = get($interim_or_result, $key);
+        $interim_or_result = get_by_single_key($interim_or_result, $key);
 
         return $default unless defined $interim_or_result;
     }
@@ -46,52 +58,7 @@ sub data_get(+$;$) {
     return $interim_or_result;
 }
 
-# Sub data_set.
-# Expects first param to be reference to data struct.
-# Second param to be key string. Maximum nested members limit is 512.
-# Third param is value.
-# If key is not defined or is 0 length - false returns.
-# Set value without autovivication.
-sub data_set(+$$) {
-    # ARGS.
-    my ($data, $key, $value) = @_;
-
-    unless (ref $data
-    && defined($key)
-    && length $key
-    ) {
-        return 0;
-    }
-
-    # Flat array of keys.
-    my @keys = split(/\./, $key);
-    my $keys_length = @keys;
-    # Limiting.
-    if (scalar $keys_length > 512) {
-        return 0;
-    }
-
-    # Var for intermidiate data in complex structs. Initial value is passed $data.
-    my $interim_or_result = $data;
-
-    my $key_counter = 1;
-
-    for my $key (@keys) {
-        if ($key_counter == $keys_length) {
-            return set($interim_or_result, $key, $value);
-        } else {
-            $interim_or_result = get($interim_or_result, $key);
-        }
-
-        return 0 unless defined $interim_or_result;
-
-        $key_counter++;
-    }
-
-    return 0;
-}
-
-sub get {
+sub get_by_single_key {
     my ($data, $key) = @_;
 
     my $type = reftype $data;
@@ -107,7 +74,30 @@ sub get {
     return undef;
 }
 
-sub set {
+sub set_by_composite_key {
+    my ($data, $key, $value) = @_;
+    # Var for intermidiate data in complex structs. Initial value is passed $data.
+    my $interim_or_result = $data;
+    # Flat array of keys.
+    my @keys = split(/\./, $key);
+
+    for my $i (0 .. $#keys) {
+        $key = $keys[$i];
+
+        if ($i == $#keys) {
+            return set_by_single_key($interim_or_result, $key, $value);
+        } else {
+            $interim_or_result = get_by_single_key($interim_or_result, $key);
+        }
+
+        return 0 unless defined $interim_or_result;
+
+    }
+
+    return 0;
+}
+
+sub set_by_single_key {
     my ($data, $key, $value) = @_;
 
     my $type = reftype $data;
@@ -125,17 +115,11 @@ sub set {
     return 0;
 }
 
-sub limit {
-    my ($array, $limit) = @_;
-
-    if (scalar @$array > $limit) {
-        @$array = @$array[0 .. --$limit];
-    }
-}
-
 1;
 
 __END__
+
+# ABSTRACT: Manipulate data structures with dot notation.
 
 =pod
 
@@ -143,7 +127,7 @@ __END__
 
 =head1 NAME
 
-    Data::Dot - Manipulate data structures with dot notation.
+    Data::Dot - Manipulate data I<structures> with I<dot notation>.
 
 =head1 SYNOPSIS
 
@@ -168,20 +152,34 @@ __END__
 
 =head1 DESCRIPTION
 
-    Manipulate data structures with dot notation.
-    Works with complex structures like:  array/hashes/multidimensional arrays, array of hashes, etc.
+    Manipulate data I<structures> with I<dot notation>.
+    Works with complex I<structures> like:  array/hashes/multidimensional arrays, array of hashes, etc.
 
-    sub data_get to fetch data from structures.
+    sub data_get to fetch data from I<structures>.
     sub data_set to set values.
-
-    Dot notation is like JavaScript or C# but adds an opportunity to Manipulate arrays additionaly.
-    Common key in dot notation looks like "key.1.name", where "1" could be an array index or hash/object key.
 
     The main advantage of this approach, that you could generate keys dynamically on the fly
     simply contatinating strings via dot ".".
 
-    But there is a small limitation of 512 key members seperated by dot's. Usually this is enough.
+=head1 TERMS
 
+=over 4
+
+=item I<Structs> or I<structures> is arrays, hashes or objects.
+
+=item I<Dot notation> is a string containing the keys of nested structures separated by a dot: ".". Looks like "key.1.name", where "1" could be an array index or hash/object key.
+
+=back
+
+=head2 data_get
+
+    Fetches data from complex I<structures> using a I<dot notation> key.
+
+    Expects first param to be reference to data I<structs>.
+    Second param to be I<dot notation> key string.
+    Third optional param is default value. If it's not set it will be undef.
+    
+    If key is not found in the I<struct> or is zero length or not defined default value will be returned.
 
 =head1 VERSION
 
@@ -196,7 +194,8 @@ __END__
 =over 4
 
 =item * delete sub
-=item * auto vivication in data_set
+
+=item * immutable subs like data_get_i & data_set_i
 
 =back
 
