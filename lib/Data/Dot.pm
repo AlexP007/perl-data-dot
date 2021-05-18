@@ -2,7 +2,6 @@ package Data::Dot;
 
 use Modern::Perl;
 use Exporter 'import';
-use Scalar::Util 'reftype';
 
 our $VERSION = '1.0.0';
 our @EXPORT = qw(data_get data_set);
@@ -56,7 +55,7 @@ sub get_by_composite_key {
 sub get_by_single_key {
     my ($data, $key) = @_;
 
-    my $type = reftype $data;
+    my $type = ref $data;
 
     if ($type eq 'HASH') {
         return $data->{$key};
@@ -95,7 +94,7 @@ sub set_by_composite_key {
 sub set_by_single_key {
     my ($data, $key, $value) = @_;
 
-    my $type = reftype $data;
+    my $type = ref $data;
 
     if ($type eq 'HASH') {
         $data->{$key} = $value;
