@@ -155,7 +155,8 @@ __END__
 
     This module uses a composite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
     The main advantage of this approach, that you could generate keys dynamically on the fly
-    simply concatinating strings via dot ".".
+    simply concatinating strings via dot ".". 
+    And it just more readable.
 
 =head2 TERMS
 
@@ -203,6 +204,10 @@ Unlike other heavy and complex solutions, this module provides two simple functi
 =item * memoization
 
 =back
+
+=head1 BUGS
+
+    If you find one, please let me know.
 
 =head1 SOURCE CODE REPOSITORY
 
