@@ -121,7 +121,7 @@ sub set_by_single_key {
         if ($data->can($key) ) {
             $data->$key($value);
         } else {
-            $data->$key = $value;
+            $data->{$key} = $value;
         }
 
         return 1;
