@@ -2,6 +2,7 @@ package Data::Dot;
 
 use Modern::Perl;
 use Exporter 'import';
+use Scalar::Util 'blessed';
 
 our $VERSION = '1.0.0';
 our @EXPORT = qw(data_get data_set);
@@ -65,6 +66,15 @@ sub get_by_single_key {
         return $data->[$key];
     }
 
+    # objects
+    if (blessed $data) {
+        if ($data->can($key) ){
+            return $data->$key;
+        }
+        return $data->$key if $data->can($key);
+        return $data->{$key};
+    }
+
     return undef;
 }
 
@@ -103,6 +113,17 @@ sub set_by_single_key {
 
     if ($type eq 'ARRAY') {
         $data->[$key] = $value;
+        return 1;
+    }
+
+    # objects
+    if (blessed $data) {
+        if ($data->can($key) ) {
+            $data->$key($value);
+        } else {
+            $data->$key = $value;
+        }
+
         return 1;
     }
 
@@ -155,7 +176,7 @@ __END__
 
     This module uses a composite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
     The main advantage of this approach, that you could generate keys dynamically on the fly
-    simply concatinating strings via dot ".". 
+    simply concatinating strings via dot ".".
     And it just more readable.
 
 =head2 TERMS
