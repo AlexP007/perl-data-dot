@@ -1,13 +1,14 @@
 use Modern::Perl;
 use Data::Dot;
 use Data::Dumper;
-use Test::Simple tests => 9;
+use Test::Simple tests => 12;
 
 $|=1;
 
 # VARS
 my %test_hash;
 my @test_array;
+my $test_object;
 my $expected;
 my $result;
 
@@ -133,6 +134,65 @@ $expected = 'default';
 );
 
 $result = data_get(\%test_hash, '', $expected);
+
+ok($result eq $expected,
+    sprintf('Returns wrong value: %s, expected: %s',
+        $result,
+        $expected,
+));
+
+# TEST 10
+# Testing object attribute.
+$expected = 'value2';
+%test_hash = (
+    key1 => [{}, {key2 =>$expected}],
+);
+$test_object = bless {hash => \%test_hash}, 'MyClass';
+
+$result = data_get($test_object, 'hash.key1.1.key2');
+
+ok($result eq $expected,
+    sprintf('Returns wrong value: %s, expected: %s',
+        $result,
+        $expected,
+));
+
+# TEST 11
+# Testing object getters.
+package MyClass;
+
+sub get_hash {
+    my $self = shift;
+    return $self->{hash};
+}
+
+package main;
+
+$expected = 'value2';
+%test_hash = (
+    key1 => [{}, {key2 =>$expected}],
+);
+
+$test_object = bless {hash => \%test_hash}, 'MyClass';
+
+$result = data_get($test_object, 'get_hash.key1.1.key2');
+
+ok($result eq $expected,
+    sprintf('Returns wrong value: %s, expected: %s',
+        $result,
+        $expected,
+));
+
+# TEST 12
+# Testing object accessors via Class::XSAccessor.
+package MyClassAccessor;
+use Class::XSAccessor accessors => {name => 'name'};
+
+package main;
+$expected = 'test_name';
+$test_object = bless {name => $expected}, 'MyClassAccessor';
+
+$result = data_get($test_object, 'name');
 
 ok($result eq $expected,
     sprintf('Returns wrong value: %s, expected: %s',
