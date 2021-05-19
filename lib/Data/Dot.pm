@@ -169,10 +169,15 @@ __END__
     my $set_success = data_set(\@authors, '0.articles.2', {heading => 'third blog'}); #true
     my $set_failed = data_set(\@authors, '1.articles.2', {heading => 'third blog'}); # false
 
+    # Objects.
+    my $publisher = bless {authors => \@authors}, 'MyClass'; # it is assumed that accessors will be used
+    my $first_author = data_get($publisher, 'get_authors.1');
+    my $set_object_success = data_set($publisher, 'authors.1', {name => 'another guy'}); #true
+
 =head1 DESCRIPTION
 
     Lightweight module to manipulate data I<structs> with I<dot notation>.
-    Works with complex I<structures> like: array/hashes/multidimensional arrays, array of hashes, etc.
+    Works with complex I<structures> like: array/hashes/objects/multidimensional arrays/array of hashes, etc.
 
     This module uses a composite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
     The main advantage of this approach, that you could generate keys dynamically on the fly
@@ -201,6 +206,9 @@ Unlike other heavy and complex solutions, this module provides two simple functi
     Second param to be I<dot notation> key string.
     Third optional param is default value. If it's not set it will be undef.
 
+    If I<struct> is an object, first, it will try to call method,
+    if this does not work, it will refer to the key.
+
     If key is not found in the I<struct> or is zero length or not defined default value will be returned.
 
 =head3 data_set
@@ -212,7 +220,12 @@ Unlike other heavy and complex solutions, this module provides two simple functi
     Third param is value.
     If key is not defined or zero length false will be returned.
 
-    Set value without autovivication.
+    If I<struct> is an object, first, it will try to call method,
+    if this does not work, it will refer to the key.
+
+    Set value without autovivication for all key members except last.
+    this means that if undef is encountered somewhere in the composite key,
+    except for the last position, then the value will not be initialized.
 
 =head1 TODO
 
@@ -222,7 +235,7 @@ Unlike other heavy and complex solutions, this module provides two simple functi
 
 =item * immutable subs like data_get_i & data_set_i
 
-=item * memoization
+=item * memoization for immutable subs, if args are the same, we could save the result.
 
 =back
 
