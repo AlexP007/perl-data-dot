@@ -1,13 +1,14 @@
 use Modern::Perl;
 use Data::Dot;
 use Data::Dumper;
-use Test::Simple tests => 7;
+use Test::Simple tests => 9;
 
 $|=1;
 
 # VARS
 my %test_hash;
 my @test_array;
+my $test_object;
 my $key;
 my $expected;
 my $result;
@@ -126,6 +127,53 @@ $result = data_set(\%test_hash, $key, $expected);
 
 if ($result) {
     $get_value = $test_hash{key1}->[1]{key2};
+
+    ok($get_value eq $expected,
+        sprintf('Returns wrong value: %s, expected: %s',
+            $get_value,
+            $expected,
+    ));
+} else {
+    ok($result, 'Returns wrong value: false, expected: true');
+}
+
+# TEST 8
+# Testing object key.
+$key = 'key';
+$expected = 'value';
+
+$test_object = bless {}, 'MyClass';
+
+$result = data_set($test_object, $key, $expected);
+
+if ($result) {
+    $get_value = $test_object->{$key};
+
+    ok($get_value eq $expected,
+        sprintf('Returns wrong value: %s, expected: %s',
+            $get_value,
+            $expected,
+    ));
+} else {
+    ok($result, 'Returns wrong value: false, expected: true');
+}
+
+# TEST 9
+# Testing object setter via Class::XSAccessor.
+package MyClassSetter;
+use Class::XSAccessor setters => {'set_key' => 'key'};
+
+package main;
+
+$key = 'key';
+$expected = 'value';
+
+$test_object = bless {}, 'MyClassSetter';
+
+$result = data_set($test_object, 'set_key', $expected);
+
+if ($result) {
+    $get_value = $test_object->{$key};
 
     ok($get_value eq $expected,
         sprintf('Returns wrong value: %s, expected: %s',

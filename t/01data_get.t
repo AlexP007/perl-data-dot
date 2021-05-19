@@ -189,6 +189,7 @@ package MyClassAccessor;
 use Class::XSAccessor accessors => {name => 'name'};
 
 package main;
+
 $expected = 'test_name';
 $test_object = bless {name => $expected}, 'MyClassAccessor';
 
