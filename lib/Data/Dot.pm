@@ -42,7 +42,7 @@ sub get_by_composite_key {
     # Also last value will be stored here. It's our target.
     my $interim_or_result = $data;
     # Flat array of keys.
-    my @keys = split(/\./, $key);
+    my @keys = split_composite_dot_key($key);
 
     for my $key (@keys) {
         $interim_or_result = get_by_single_key($interim_or_result, $key);
@@ -51,6 +51,29 @@ sub get_by_composite_key {
     }
 
     return $interim_or_result;
+}
+
+sub set_by_composite_key {
+    my ($data, $key, $value) = @_;
+    # Var for intermidiate data in complex structs. Initial value is passed $data.
+    my $interim_or_result = $data;
+    # Flat array of keys.
+    my @keys = split_composite_dot_key($key);
+
+    for my $i (0 .. $#keys) {
+        my $single_key = $keys[$i];
+
+        if ($i == $#keys) {
+            return set_by_single_key($interim_or_result, $single_key, $value);
+        } else {
+            $interim_or_result = get_by_single_key($interim_or_result, $single_key);
+        }
+
+        return 0 unless defined $interim_or_result;
+
+    }
+
+    return 0;
 }
 
 sub get_by_single_key {
@@ -66,7 +89,7 @@ sub get_by_single_key {
         return $data->[$key];
     }
 
-    # objects
+    # Objects.
     if (blessed $data) {
         if ($data->can($key) ){
             return $data->$key;
@@ -76,29 +99,6 @@ sub get_by_single_key {
     }
 
     return undef;
-}
-
-sub set_by_composite_key {
-    my ($data, $key, $value) = @_;
-    # Var for intermidiate data in complex structs. Initial value is passed $data.
-    my $interim_or_result = $data;
-    # Flat array of keys.
-    my @keys = split(/\./, $key);
-
-    for my $i (0 .. $#keys) {
-        $key = $keys[$i];
-
-        if ($i == $#keys) {
-            return set_by_single_key($interim_or_result, $key, $value);
-        } else {
-            $interim_or_result = get_by_single_key($interim_or_result, $key);
-        }
-
-        return 0 unless defined $interim_or_result;
-
-    }
-
-    return 0;
 }
 
 sub set_by_single_key {
@@ -116,7 +116,7 @@ sub set_by_single_key {
         return 1;
     }
 
-    # objects
+    # Objects.
     if (blessed $data) {
         if ($data->can($key) ) {
             $data->$key($value);
@@ -128,6 +128,12 @@ sub set_by_single_key {
     }
 
     return 0;
+}
+
+sub split_composite_dot_key {
+    my $key = shift;
+
+    return split(/\./, $key);
 }
 
 1;
@@ -179,7 +185,7 @@ __END__
     Lightweight module to manipulate data I<structs> with I<dot notation>.
     Works with complex I<structures> like: array/hashes/objects/multidimensional arrays/array of hashes, etc.
 
-    This module uses a composite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
+    This module uses a ite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
     The main advantage of this approach, that you could generate keys dynamically on the fly
     simply concatinating strings via dot ".".
     And it just more readable.
