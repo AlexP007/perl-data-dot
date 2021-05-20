@@ -1,7 +1,6 @@
-use Modern::Perl;
-use Data::Dot;
-use Data::Dumper;
-use Test::Simple tests => 12;
+use Modern::Perl 1.20200211;
+use Data::Dot 1.0.0;
+use Test::Simple 1.302183 tests => 12;
 
 $|=1;
 

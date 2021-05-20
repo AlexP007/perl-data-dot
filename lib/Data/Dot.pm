@@ -1,11 +1,11 @@
 package Data::Dot;
 
-use Modern::Perl;
-use Exporter 'import';
-use Scalar::Util 'blessed';
+use Modern::Perl 1.20200211;
+use Exporter 5.74 'import';
+use Scalar::Util 1.56 'blessed';
 
-our $VERSION = '1.0.0';
-our @EXPORT = qw(data_get data_set);
+our $VERSION   = '1.0.0';
+our @EXPORT    = qw(data_get data_set);
 our @EXPORT_OK = qw(data_get data_set);
 
 sub data_get(+$;$) {
@@ -28,8 +28,9 @@ sub validate_data_and_key {
     my ($data, $key) = @_;
 
     if (ref $data
-    && defined $key
-    && length $key) {
+        and defined $key
+        and length $key)
+    {
         return 1;
     }
 
@@ -38,9 +39,11 @@ sub validate_data_and_key {
 
 sub get_by_composite_key {
     my ($data, $key, $default) = @_;
-    # Var for intermidiate data in complex structs. Initial value is passed $data.
+
+    # Var for intermediate data in complex structs. Initial value is passed $data.
     # Also last value will be stored here. It's our target.
     my $interim_or_result = $data;
+
     # Flat array of keys.
     my @keys = split_composite_dot_key($key);
 
@@ -55,18 +58,22 @@ sub get_by_composite_key {
 
 sub set_by_composite_key {
     my ($data, $key, $value) = @_;
-    # Var for intermidiate data in complex structs. Initial value is passed $data.
+
+    # Var for intermediate data in complex structs. Initial value is passed $data.
     my $interim_or_result = $data;
+
     # Flat array of keys.
     my @keys = split_composite_dot_key($key);
 
     for my $i (0 .. $#keys) {
-        my $single_key = $keys[$i];
+        my $key_member = $keys[$i];
 
         if ($i == $#keys) {
-            return set_by_single_key($interim_or_result, $single_key, $value);
-        } else {
-            $interim_or_result = get_by_single_key($interim_or_result, $single_key);
+            return set_by_single_key($interim_or_result, $key_member, $value);
+        }
+
+        else {
+            $interim_or_result = get_by_single_key($interim_or_result, $key_member);
         }
 
         return 0 unless defined $interim_or_result;
@@ -91,10 +98,11 @@ sub get_by_single_key {
 
     # Objects.
     if (blessed $data) {
-        if ($data->can($key) ){
+
+        if ($data->can($key) ) {
             return $data->$key;
         }
-        return $data->$key if $data->can($key);
+
         return $data->{$key};
     }
 
@@ -108,19 +116,24 @@ sub set_by_single_key {
 
     if ($type eq 'HASH') {
         $data->{$key} = $value;
+
         return 1;
     }
 
     if ($type eq 'ARRAY') {
         $data->[$key] = $value;
+
         return 1;
     }
 
     # Objects.
     if (blessed $data) {
+
         if ($data->can($key) ) {
             $data->$key($value);
-        } else {
+        }
+
+        else {
             $data->{$key} = $value;
         }
 
@@ -131,7 +144,7 @@ sub set_by_single_key {
 }
 
 sub split_composite_dot_key {
-    my $key = shift;
+    my ($key) = @_;
 
     return split(/\./, $key);
 }
@@ -185,9 +198,9 @@ __END__
     Lightweight module to manipulate data I<structs> with I<dot notation>.
     Works with complex I<structures> like: array/hashes/objects/multidimensional arrays/array of hashes, etc.
 
-    This module uses a ite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
+    This module uses a composite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
     The main advantage of this approach, that you could generate keys dynamically on the fly
-    simply concatinating strings via dot ".".
+    simply concatenating strings via dot ".".
     And it just more readable.
 
 =head2 TERMS
@@ -204,7 +217,7 @@ __END__
 
 Unlike other heavy and complex solutions, this module provides two simple functions:
 
-=head3 data_get
+=head3 C<data_get( $data, $key, $default = undef )>
 
     Fetches data from complex I<structs> using a I<dot notation> key.
 
@@ -217,7 +230,7 @@ Unlike other heavy and complex solutions, this module provides two simple functi
 
     If key is not found in the I<struct> or is zero length or not defined default value will be returned.
 
-=head3 data_set
+=head3 C<data_set( $data, $key, $value )>
 
     Sets data in complex I<structs> using a I<dot notation> key.
 
@@ -237,11 +250,11 @@ Unlike other heavy and complex solutions, this module provides two simple functi
 
 =over 4
 
-=item * data_delete sub
+=item * data_del() sub - delete
+
+=item * data_def() sub - if key is defined
 
 =item * immutable subs like data_get_i & data_set_i
-
-=item * memoization for immutable subs, if args are the same, we could save the result.
 
 =back
 
