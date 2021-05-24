@@ -1,6 +1,6 @@
-use Modern::Perl 1.20200211;
-use Data::Dot 1.0.0;
-use Test::Simple 1.302183 tests => 9;
+use Modern::Perl;
+use Data::Dot 'data_set';
+use Test::Simple tests => 8;
 
 $|=1;
 
@@ -95,26 +95,6 @@ if ($result) {
 }
 
 # TEST 6
-# Testing reference pass.
-$key = '2.key2';
-$expected = 'value2';
-@test_array = ('one', 'two', {key1 => 'value1'}, 'four');
-
-$result = data_set(@test_array, $key, $expected);
-
-if ($result) {
-    $get_value = $test_array[2]->{key2};
-
-    ok($get_value eq $expected,
-        sprintf('Returns wrong value: %s, expected: %s',
-            $get_value,
-            $expected,
-    ));
-} else {
-    ok($result, 'Returns wrong value: false, expected: true');
-}
-
-# TEST 7
 # Testing complex struct.
 $key = 'key1.1.key2';
 $expected = 'value2';
@@ -136,7 +116,7 @@ if ($result) {
     ok($result, 'Returns wrong value: false, expected: true');
 }
 
-# TEST 8
+# TEST 7
 # Testing object key.
 $key = 'key';
 $expected = 'value';
@@ -157,7 +137,7 @@ if ($result) {
     ok($result, 'Returns wrong value: false, expected: true');
 }
 
-# TEST 9
+# TEST 8
 # Testing object setter via Class::XSAccessor.
 package MyClassSetter;
 use Class::XSAccessor setters => {'set_key' => 'key'};

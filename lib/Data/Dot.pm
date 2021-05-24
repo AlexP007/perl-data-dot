@@ -1,40 +1,38 @@
 package Data::Dot;
 
-use Modern::Perl 1.20200211;
-use Exporter 5.74 'import';
-use Scalar::Util 1.56 'blessed';
+use Modern::Perl;
+use Exporter 'import';
+use Scalar::Util 'blessed';
 
-our $VERSION   = '1.0.0';
-our @EXPORT    = qw(data_get data_set);
+our $VERSION   = '1.00';
 our @EXPORT_OK = qw(data_get data_set);
 
-sub data_get(+$;$) {
+sub data_get {
     my ($data, $key, $default) = @_;
 
-    return $default unless validate_data_and_key($data, $key);
+    return $default unless validate_data($data) and validate_key($key);
 
     return get_by_composite_key($data, $key, $default);
 }
 
-sub data_set(+$$) {
+sub data_set {
     my ($data, $key, $value) = @_;
 
-    return 0 unless validate_data_and_key($data, $key);
+    return 0 unless validate_data($data) and validate_key($key);
 
     return set_by_composite_key($data, $key, $value);
 }
 
-sub validate_data_and_key {
-    my ($data, $key) = @_;
+sub validate_data {
+    my ($data) = @_;
 
-    if (ref $data
-        and defined $key
-        and length $key)
-    {
-        return 1;
-    }
+    return ref $data;
+}
 
-    return 0;
+sub validate_key {
+    my ($key) = @_;
+
+    return defined $key && length $key;
 }
 
 sub get_by_composite_key {
@@ -92,21 +90,18 @@ sub get_by_single_key {
         return $data->{$key};
     }
 
-    if ($type eq 'ARRAY') {
+    elsif ($type eq 'ARRAY') {
         return $data->[$key];
     }
 
     # Objects.
-    if (blessed $data) {
-
-        if ($data->can($key) ) {
-            return $data->$key;
-        }
-
-        return $data->{$key};
+    elsif (blessed $data) {
+        return get_from_object($data, $key);
     }
 
-    return undef;
+    else {
+        return undef;
+    }
 }
 
 sub set_by_single_key {
@@ -120,27 +115,45 @@ sub set_by_single_key {
         return 1;
     }
 
-    if ($type eq 'ARRAY') {
+    elsif ($type eq 'ARRAY') {
         $data->[$key] = $value;
 
         return 1;
     }
 
     # Objects.
-    if (blessed $data) {
-
-        if ($data->can($key) ) {
-            $data->$key($value);
-        }
-
-        else {
-            $data->{$key} = $value;
-        }
-
-        return 1;
+    elsif (blessed $data) {
+        return set_to_object($data, $key, $value);
     }
 
-    return 0;
+    else {
+        return 0;
+    }
+}
+
+sub get_from_object {
+    my ($obj, $key) = @_;
+
+    if ($obj->can($key) ) {
+        return $obj->$key;
+    }
+
+    return $obj->{$key};
+
+}
+
+sub set_to_object {
+    my ($obj, $key, $value) = @_;
+
+    if ($obj->can($key) ) {
+        $obj->$key($value);
+    }
+
+    else {
+        $obj->{$key} = $value;
+    }
+
+    return 1
 }
 
 sub split_composite_dot_key {
@@ -170,24 +183,19 @@ __END__
 =head1 SYNOPSIS
 
     use Data::Dot;
-
     # Getting value by key.
     my %author = (name => 'big guy', articles => [{heading => 'first blog'}, {heading => 'second blog'} ]);
     my $second_blog_heading = data_get(\%author, 'articles.1.heading'); # second blog
     my @authors = (\%author);
     my $first_author_first_blog_heading = data_get(\@authors, '0.articles.0.heading'); # first blog
-
     # Getting undef value if the key is not set.
     my $undef_value = data_get(\%author, 'publisher.address.street'); # undef
-
     # Getting default value if the key is not set.
     my $default = 'unknown';
     my $default_value = data_get(\%author, 'publisher.address.street', $default); # unknown
-
     # Setting value.
     my $set_success = data_set(\@authors, '0.articles.2', {heading => 'third blog'}); #true
     my $set_failed = data_set(\@authors, '1.articles.2', {heading => 'third blog'}); # false
-
     # Objects.
     my $publisher = bless {authors => \@authors}, 'MyClass'; # it is assumed that accessors will be used
     my $first_author = data_get($publisher, 'get_authors.1');
@@ -197,8 +205,8 @@ __END__
 
     Lightweight module to manipulate data I<structs> with I<dot notation>.
     Works with complex I<structures> like: array/hashes/objects/multidimensional arrays/array of hashes, etc.
-
     This module uses a composite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
+    
     The main advantage of this approach, that you could generate keys dynamically on the fly
     simply concatenating strings via dot ".".
     And it just more readable.

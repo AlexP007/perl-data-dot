@@ -1,6 +1,6 @@
-use Modern::Perl 1.20200211;
-use Data::Dot 1.0.0;
-use Test::Simple 1.302183 tests => 12;
+use Modern::Perl;
+use Data::Dot 'data_get';
+use Test::Simple tests => 11;
 
 $|=1;
 
@@ -83,19 +83,6 @@ ok($result eq $expected,
 ));
 
 # TEST 6
-# Testing reference pass.
-$expected = 'value2';
-@test_array = ('one', 'two', {key1 => 'value1', key2 => $expected}, 'four');
-
-$result = data_get(@test_array, '2.key2');
-
-ok($result eq $expected,
-    sprintf('Returns wrong value: %s, expected: %s',
-        $result,
-        $expected,
-));
-
-# TEST 7
 # Testing complex struct.
 $expected = 'value2';
 %test_hash = (
@@ -110,7 +97,7 @@ ok($result eq $expected,
         $expected,
 ));
 
-# TEST 8
+# TEST 7
 # Testing undef key.
 $expected = 'default';
 %test_hash = (
@@ -125,7 +112,7 @@ ok($result eq $expected,
         $expected,
 ));
 
-# TEST 9
+# TEST 8
 # Testing zero length key.
 $expected = 'default';
 %test_hash = (
@@ -140,7 +127,7 @@ ok($result eq $expected,
         $expected,
 ));
 
-# TEST 10
+# TEST 9
 # Testing object attribute.
 $expected = 'value2';
 %test_hash = (
@@ -156,7 +143,7 @@ ok($result eq $expected,
         $expected,
 ));
 
-# TEST 11
+# TEST 10
 # Testing object getters.
 package MyClass;
 
@@ -182,7 +169,7 @@ ok($result eq $expected,
         $expected,
 ));
 
-# TEST 12
+# TEST 11
 # Testing object accessors via Class::XSAccessor.
 package MyClassAccessor;
 use Class::XSAccessor accessors => {name => 'name'};
