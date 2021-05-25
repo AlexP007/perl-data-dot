@@ -10,7 +10,7 @@ our @EXPORT_OK = qw(data_get data_set);
 sub data_get {
     my ($data, $key, $default) = @_;
 
-    return $default unless validate_data($data) and validate_key($key);
+    return $default unless validate($data, $key);
 
     return get_by_composite_key($data, $key, $default);
 }
@@ -18,9 +18,15 @@ sub data_get {
 sub data_set {
     my ($data, $key, $value) = @_;
 
-    return 0 unless validate_data($data) and validate_key($key);
+    return 0 unless validate($data, $key);
 
     return set_by_composite_key($data, $key, $value);
+}
+
+sub validate {
+    my ($data, $key) = @_;
+
+    return validate_data($data) && validate_key($key);
 }
 
 sub validate_data {
@@ -206,7 +212,7 @@ __END__
     Lightweight module to manipulate data I<structs> with I<dot notation>.
     Works with complex I<structures> like: array/hashes/objects/multidimensional arrays/array of hashes, etc.
     This module uses a composite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
-    
+
     The main advantage of this approach, that you could generate keys dynamically on the fly
     simply concatenating strings via dot ".".
     And it just more readable.
