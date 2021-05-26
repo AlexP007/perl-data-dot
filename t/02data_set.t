@@ -1,4 +1,6 @@
-use Modern::Perl;
+use strict;
+use warnings;
+
 use Data::Dot 'data_set';
 use Test::Simple tests => 8;
 
@@ -140,7 +142,12 @@ if ($result) {
 # TEST 8
 # Testing object setter via Class::XSAccessor.
 package MyClassSetter;
-use Class::XSAccessor setters => {'set_key' => 'key'};
+
+sub set_key {
+    my ($self, $value) = @_;
+    $self->{key} = $value;
+}
+
 
 package main;
 

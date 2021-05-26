@@ -1,4 +1,6 @@
-use Modern::Perl;
+use strict;
+use warnings;
+
 use Data::Dot 'data_get';
 use Test::Simple tests => 11;
 
@@ -145,10 +147,10 @@ ok($result eq $expected,
 
 # TEST 10
 # Testing object getters.
-package MyClass;
+package MyClassGetter;
 
 sub get_hash {
-    my $self = shift;
+    my ($self) = @_;
     return $self->{hash};
 }
 
@@ -159,7 +161,7 @@ $expected = 'value2';
     key1 => [{}, {key2 =>$expected}],
 );
 
-$test_object = bless {hash => \%test_hash}, 'MyClass';
+$test_object = bless {hash => \%test_hash}, 'MyClassGetter';
 
 $result = data_get($test_object, 'get_hash.key1.1.key2');
 
@@ -172,7 +174,11 @@ ok($result eq $expected,
 # TEST 11
 # Testing object accessors via Class::XSAccessor.
 package MyClassAccessor;
-use Class::XSAccessor accessors => {name => 'name'};
+
+sub set_name {
+    my ($self, $name) = @_;
+    $self->{name} = $name;
+}
 
 package main;
 
