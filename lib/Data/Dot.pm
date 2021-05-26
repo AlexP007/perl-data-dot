@@ -64,7 +64,7 @@ sub set_by_composite_key {
     my ($data, $key, $value) = @_;
 
     # Var for intermediate data in complex structs. Initial value is passed $data.
-    my $interim_or_result = $data;
+    my $interim = $data;
 
     # Flat array of keys.
     my @keys = split_composite_dot_key($key);
@@ -73,14 +73,14 @@ sub set_by_composite_key {
         my $key_member = $keys[$i];
 
         if ($i == $#keys) {
-            return set_by_single_key($interim_or_result, $key_member, $value);
+            return set_by_single_key($interim, $key_member, $value);
         }
 
         else {
-            $interim_or_result = get_by_single_key($interim_or_result, $key_member);
+            $interim = get_by_single_key($interim, $key_member);
         }
 
-        return 0 unless defined $interim_or_result;
+        return 0 unless defined $interim;
 
     }
 
@@ -102,7 +102,7 @@ sub get_by_single_key {
 
     # Objects.
     elsif (blessed $data) {
-        return get_from_object($data, $key);
+        return object_get($data, $key);
     }
 
     else {
@@ -129,7 +129,7 @@ sub set_by_single_key {
 
     # Objects.
     elsif (blessed $data) {
-        return set_to_object($data, $key, $value);
+        return object_set($data, $key, $value);
     }
 
     else {
@@ -137,7 +137,7 @@ sub set_by_single_key {
     }
 }
 
-sub get_from_object {
+sub object_get {
     my ($obj, $key) = @_;
 
     if ($obj->can($key) ) {
@@ -148,7 +148,7 @@ sub get_from_object {
 
 }
 
-sub set_to_object {
+sub object_set {
     my ($obj, $key, $value) = @_;
 
     if ($obj->can($key) ) {
