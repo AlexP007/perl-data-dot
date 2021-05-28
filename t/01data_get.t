@@ -158,7 +158,7 @@ package main;
 
 $expected = 'value2';
 %test_hash = (
-    key1 => [{}, {key2 =>$expected}],
+    key1 => [{}, {key2 => $expected}],
 );
 
 $test_object = bless {hash => \%test_hash}, 'MyClassGetter';
@@ -172,7 +172,7 @@ ok($result eq $expected,
 ));
 
 # TEST 11
-# Testing object accessors via Class::XSAccessor.
+# Testing object accessor.
 package MyClassAccessor;
 
 sub set_name {

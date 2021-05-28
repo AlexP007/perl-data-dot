@@ -140,7 +140,7 @@ if ($result) {
 }
 
 # TEST 8
-# Testing object setter via Class::XSAccessor.
+# Testing object setter.
 package MyClassSetter;
 
 sub set_key {

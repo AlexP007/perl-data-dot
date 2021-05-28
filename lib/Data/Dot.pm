@@ -7,7 +7,7 @@ use Exporter 'import';
 use Scalar::Util 'blessed';
 
 our $VERSION   = '1.00';
-our @EXPORT_OK = qw(data_get data_set);
+our @EXPORT_OK = qw(data_get data_set data_del);
 
 sub data_get {
     my ($data, $key, $default) = @_;
