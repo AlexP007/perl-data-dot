@@ -285,7 +285,7 @@ __END__
 
 Unlike other heavy and complex solutions, this module provides two simple functions:
 
-=head3 C<data_get( $data, $key, $default = undef )>
+=head3 C<data_get($data, $key, $default = undef)>
 
     Fetches data from complex I<structs> using a I<dot notation> key.
 
@@ -298,7 +298,7 @@ Unlike other heavy and complex solutions, this module provides two simple functi
 
     If key is not found in the I<struct> or is zero length or not defined default value will be returned.
 
-=head3 C<data_set( $data, $key, $value )>
+=head3 C<data_set($data, $key, $value)>
 
     Sets data in complex I<structs> using a I<dot notation> key.
 
@@ -314,11 +314,20 @@ Unlike other heavy and complex solutions, this module provides two simple functi
     this means that if undef is encountered somewhere in the composite key,
     except for the last position, then the value will not be initialized.
 
+=head3 C<data_del($data, $key)>
+
+    Delete data in complex I<structs> using a I<dot notation> key using
+    built-in function L<delete|https://perldoc.perl.org/functions/delete>
+    under the hood.
+
+    This function returns undef if something go wrong, aware this.
+
+    Could delete key in object, only if this object blessed on hash.
+    But who create objects from scalar or array anyway?
+
 =head1 TODO
 
 =over 4
-
-=item * data_del() sub - delete
 
 =item * data_def() sub - if key is defined
 
