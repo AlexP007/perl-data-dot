@@ -234,42 +234,67 @@ __END__
 
 =head1 NAME
 
-    Data::Dot - Manipulate data I<structs> with I<dot notation>.
+Data::Dot - Manipulate data I<structs> with I<dot notation>.
 
 =head1 VERSION
 
-    version 1.0.0
+version 1.0.0
 
 =head1 SYNOPSIS
 
     use Data::Dot;
-    # Getting value by key.
+
+    ## Creating example structs.
+
+    # Hash
     my %author = (name => 'big guy', articles => [{heading => 'first blog'}, {heading => 'second blog'} ]);
-    my $second_blog_heading = data_get(\%author, 'articles.1.heading'); # second blog
+
+    # Array
     my @authors = (\%author);
+
+    # Object.
+    my $publisher = bless {authors => \@authors}, 'MyClass'; # it is assumed that accessors will be used
+
+    ## Gettting values.
+
+    # Getting value by key form hash.
+    my $second_blog_heading = data_get(\%author, 'articles.1.heading'); # second blog
+
+    # Getting value by key form array.
     my $first_author_first_blog_heading = data_get(\@authors, '0.articles.0.heading'); # first blog
+
     # Getting undef value if the key is not set.
     my $undef_value = data_get(\%author, 'publisher.address.street'); # undef
-    # Getting default value if the key is not set.
-    my $default = 'unknown';
-    my $default_value = data_get(\%author, 'publisher.address.street', $default); # unknown
-    # Setting value.
-    my $set_success = data_set(\@authors, '0.articles.2', {heading => 'third blog'}); #true
-    my $set_failed = data_set(\@authors, '1.articles.2', {heading => 'third blog'}); # false
-    # Objects.
-    my $publisher = bless {authors => \@authors}, 'MyClass'; # it is assumed that accessors will be used
+
+    # Getting first author from object.
     my $first_author = data_get($publisher, 'get_authors.1');
+
+    # Default return.
+    my $default = 'unknown';
+
+    # Getting default value if the key is not set.
+    my $default_value = data_get(\%author, 'publisher.address.street', $default); # unknown
+
+    ## Setting values.
+
+    # Success set.
+    my $set_success = data_set(\@authors, '0.articles.2', {heading => 'third blog'}); #true
+
+    # Failed set.
+    my $set_failed = data_set(\@authors, '1.articles.2', {heading => 'third blog'}); # false
+
+    # Setting second author to object.
     my $set_object_success = data_set($publisher, 'authors.1', {name => 'another guy'}); #true
 
 =head1 DESCRIPTION
 
-    Lightweight module to manipulate data I<structs> with I<dot notation>.
-    Works with complex I<structures> like: array/hashes/objects/multidimensional arrays/array of hashes, etc.
-    This module uses a composite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
+Lightweight module to manipulate data I<structs> with I<dot notation>.
+Works with complex I<structures> like: array/hashes/objects/multidimensional arrays/array of hashes, etc.
+This module uses a composite I<dot notation> key string like: "person.credentials.name" to work with I<structs>.
 
-    The main advantage of this approach, that you could generate keys dynamically on the fly
-    simply concatenating strings via dot ".".
-    And it just more readable.
+The main advantage of this approach, that you could generate keys dynamically on the fly
+simply concatenating strings via dot ".".
+And it just more readable.
 
 =head2 TERMS
 
@@ -285,45 +310,45 @@ __END__
 
 Unlike other heavy and complex solutions, this module provides two simple functions:
 
-=head3 C<data_get($data, $key, $default = undef)>
+=head3 data_get($data, $key, $default = undef)
 
-    Fetches data from complex I<structs> using a I<dot notation> key.
+Fetches data from complex I<structs> using a I<dot notation> key.
 
-    Expects first param to be reference to data I<struct>.
-    Second param to be I<dot notation> key string.
-    Third optional param is default value. If it's not set it will be undef.
+Expects first param to be reference to data I<struct>.
+Second param to be I<dot notation> key string.
+Third optional param is default value. If it's not set it will be undef.
 
-    If I<struct> is an object, first, it will try to call method,
-    if this does not work, it will refer to the key.
+If I<struct> is an object, first, it will try to call method,
+if this does not work, it will refer to the key.
 
-    If key is not found in the I<struct> or is zero length or not defined default value will be returned.
+If key is not found in the I<struct> or is zero length or not defined default value will be returned.
 
-=head3 C<data_set($data, $key, $value)>
+=head3 data_set($data, $key, $value)
 
-    Sets data in complex I<structs> using a I<dot notation> key.
+Sets data in complex I<structs> using a I<dot notation> key.
 
-    Expects first param to be reference to data I<struct>.
-    Second param to be I<dot notation> key string.
-    Third param is value.
-    If key is not defined or zero length false will be returned.
+Expects first param to be reference to data I<struct>.
+Second param to be I<dot notation> key string.
+Third param is value.
+If key is not defined or zero length false will be returned.
 
-    If I<struct> is an object, first, it will try to call method,
-    if this does not work, it will refer to the key.
+If I<struct> is an object, first, it will try to call method,
+if this does not work, it will refer to the key.
 
-    Set value without autovivication for all key members except last.
-    this means that if undef is encountered somewhere in the composite key,
-    except for the last position, then the value will not be initialized.
+Set value without autovivication for all key members except last.
+this means that if undef is encountered somewhere in the composite key,
+except for the last position, then the value will not be initialized.
 
-=head3 C<data_del($data, $key)>
+=head3 data_del($data, $key)
 
-    Delete data in complex I<structs> using a I<dot notation> key using
-    built-in function L<delete|https://perldoc.perl.org/functions/delete>
-    under the hood.
+Delete data in complex I<structs> using a I<dot notation> key using
+built-in function L<delete|https://perldoc.perl.org/functions/delete>
+under the hood.
 
-    This function returns undef if something go wrong, aware this.
+This function returns undef if something go wrong, aware this.
 
-    Could delete key in object, only if this object blessed on hash.
-    But who create objects from scalar or array anyway?
+Could delete key in object, only if this object blessed on hash.
+But who create objects from scalar or array anyway?
 
 =head1 TODO
 
@@ -337,21 +362,21 @@ Unlike other heavy and complex solutions, this module provides two simple functi
 
 =head1 BUGS
 
-    If you find one, please let me know.
+If you find one, please let me know.
 
 =head1 SOURCE CODE REPOSITORY
 
-    https://github.com/AlexP007/perl-data-dot - fork or add pr.
+https://github.com/AlexP007/perl-data-dot - fork or add pr.
 
 =head1 AUTHOR
 
-    Alexander Panteleev <alex.panteleev@protonmail.com>
+Alexander Panteleev <alex.panteleev@protonmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-    This software is copyright (c) 2021 by Alexander Panteleev.
+This software is copyright (c) 2021 by Alexander Panteleev.
 
-    This is free software; you can redistribute it and/or modify it under
-    the same terms as the Perl 5 programming language system itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
