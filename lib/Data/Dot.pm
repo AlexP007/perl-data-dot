@@ -1,5 +1,7 @@
 package Data::Dot;
 
+use 5.24.0;
+
 use strict;
 use warnings;
 
