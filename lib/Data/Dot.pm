@@ -372,7 +372,7 @@ https://github.com/AlexP007/perl-data-dot - fork or add pr.
 
 =head1 AUTHOR
 
-Alexander Panteleev <alex.panteleev@protonmail.com>
+Alexander Panteleev
 
 =head1 COPYRIGHT AND LICENSE
 
